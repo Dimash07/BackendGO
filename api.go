@@ -19,6 +19,7 @@ func quotesByTagHandler(w http.ResponseWriter, r *http.Request) {
 
 	tag := r.URL.Query().Get("tag")
 
+	//get by tag
 	response := getQuotesByTag(tag)
 
 	json.NewEncoder(w).Encode(response)
