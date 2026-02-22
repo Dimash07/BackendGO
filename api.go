@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,6 +21,7 @@ func quotesByTagHandler(w http.ResponseWriter, r *http.Request) {
 	tag := r.URL.Query().Get("tag")
 
 	//get by tag
+	fmt.Println(tag)
 	response := getQuotesByTag(tag)
 
 	json.NewEncoder(w).Encode(response)
