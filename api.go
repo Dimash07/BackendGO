@@ -19,6 +19,8 @@ func quotesByTagHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	tag := r.URL.Query().Get("tag")
+
+	//get by tag
 	fmt.Println(tag)
 	response := getQuotesByTag(tag)
 
