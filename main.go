@@ -10,6 +10,7 @@ func main() {
 
 	mux.HandleFunc("GET /api/quotes/", quotesListDispatcher)
 	mux.HandleFunc("POST /api/quotes/", createQuoteHandler)
+
 	mux.HandleFunc("GET /api/quotes/{id}", quotesByIdHandler)
 	mux.HandleFunc("PUT /api/quotes/{id}", updateQuoteByIdHandler)
 	mux.HandleFunc("DELETE /api/quotes/{id}", deleteQuoteByIdHandler)

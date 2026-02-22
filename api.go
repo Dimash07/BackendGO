@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -29,14 +28,14 @@ func quotesByIdHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	idst := r.PathValue("id")
-	fmt.Println(idst)
+
 	id, err := strconv.Atoi(idst)
 
 	if err != nil {
 		http.Error(w, "Invalid quote ID", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(id, err)
+
 	response := getQuoteById(id)
 
 	if response == nil {
