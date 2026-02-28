@@ -1,0 +1,7 @@
+CREATE TABLE quotes (
+	id INTEGER PRIMARY KEY AUTOINCREMENT;
+	text TEXT NOT NULL,
+	author TEXT NOT NULL,
+	tag TEXT,
+	created_at TEXT NOT NULL
+);

@@ -3,9 +3,9 @@ package main
 import "time"
 
 type Quote struct {
-	ID        int
-	Text      string
-	Author    string
-	Tag       string
-	CreatedAt time.Time
+    ID        int       `json:"id"`
+    Text      string    `json:"text"`
+    Author    string    `json:"author"`
+    Tag       string    `json:"tag"`
+    CreatedAt time.Time `json:"created_at"`
 }

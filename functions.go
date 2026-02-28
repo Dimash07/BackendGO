@@ -1,6 +1,10 @@
 package main
 
 import (
+	"database/sql"
+	"io"
+	"log/slog"
+	"os"
 	"time"
 )
 
@@ -12,8 +16,35 @@ func parseTime(value string) time.Time {
 	return t
 }
 
-func getAllQuotes() []Quote {
-	return quotes
+func getAllQuotes(db *sql.DB) []Quote {
+	file, _ := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	multi := io.MultiWriter(os.Stdout, file)
+
+	logger := slog.New(slog.NewTextHandler(multi, nil))
+	if db == nil {
+		logger.Info("DB is nil!")
+	}
+	rows, err := db.Query("SELECT id, text, author, tag, created_at FROM quotes")
+	if err != nil {
+		logger.Info("Ошибка при запросе к БД:", err)
+		return []Quote{}
+	}
+	defer rows.Close()
+
+	var list []Quote
+	for rows.Next() {
+		var q Quote
+		var CreatedAtStr string
+		err := rows.Scan(&q.ID, &q.Text, &q.Author, &q.Tag, &CreatedAtStr)
+		if err != nil {
+			logger.Info("Ошибка скан строка:", err)
+			continue
+		}
+		q.CreatedAt, _ = time.Parse(time.RFC3339, CreatedAtStr)
+		list = append(list, q)
+	}
+
+	return list
 }
 
 func getQuotesByTag(tag string) []Quote {

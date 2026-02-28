@@ -1,0 +1,1 @@
+SELECT * FROM quotes WHERE tag like "%ра%"

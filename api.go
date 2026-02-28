@@ -1,27 +1,28 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-func quotesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func quotesHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
-	response := getAllQuotes()
-	json.NewEncoder(w).Encode(response)
+		response := getAllQuotes(db)
+		json.NewEncoder(w).Encode(response)
+	}
 }
 
 func quotesByTagHandler(w http.ResponseWriter, r *http.Request) {
+
 	w.Header().Set("Content-Type", "application/json")
 
 	tag := r.URL.Query().Get("tag")
 
-	//get by tag
-	fmt.Println(tag)
 	response := getQuotesByTag(tag)
 
 	json.NewEncoder(w).Encode(response)
@@ -105,12 +106,14 @@ func deleteQuoteByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func quotesListDispatcher(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Query().Get("tag") != "" {
-		quotesByTagHandler(w, r)
-		return
+func quotesListDispatcher(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("tag") != "" {
+			quotesHandler(db)(w, r)
+			return
+		}
+		quotesHandler(db)(w, r)
 	}
-	quotesHandler(w, r)
 }
 
 func createQuoteHandler(w http.ResponseWriter, r *http.Request) {
