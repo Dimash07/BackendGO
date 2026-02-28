@@ -1,0 +1,4 @@
+.env
+storage/quotes.db
+app.log
+sql scripts/

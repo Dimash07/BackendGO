@@ -41,7 +41,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/quotes/", quotesListDispatcher(db))
+	mux.HandleFunc("GET /api/quotes/", quotesHandler(db))
+
 	mux.HandleFunc("POST /api/quotes/", createQuoteHandler)
 
 	mux.HandleFunc("GET /api/quotes/{id}", quotesByIdHandler)
