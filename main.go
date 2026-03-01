@@ -41,6 +41,11 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
 	mux.HandleFunc("GET /api/quotes/", quotesHandler(db))
 
 	mux.HandleFunc("POST /api/quotes/", createQuoteHandler)
