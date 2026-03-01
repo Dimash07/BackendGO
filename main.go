@@ -46,11 +46,18 @@ func main() {
 	mux.HandleFunc("POST /api/quotes/", createQuoteHandler)
 
 	mux.HandleFunc("GET /api/quotes/{id}", quotesByIdHandler)
-	mux.HandleFunc("PUT /api/quotes/{id}", updateQuoteByIdHandler)
+	mux.HandleFunc("PUT /api/quotes/{iqd}", updateQuoteByIdHandler)
 	mux.HandleFunc("DELETE /api/quotes/{id}", deleteQuoteByIdHandler)
 	log.Println("Server started on :9090")
-	if err := http.ListenAndServe(":9090", mux); err != nil {
-		log.Fatal("port failed", err)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9090" // локально
 	}
 
+	logger.Info("Server starting on port " + port)
+
+	// 🔹 Запуск сервера
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
+		log.Fatal("server failed:", err)
+	}
 }
