@@ -1,30 +1,75 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
-	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
-func quotesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func quotesHandler(db *sql.DB) http.HandlerFunc {
+	file, _ := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	multi := io.MultiWriter(os.Stdout, file)
 
-	response := getAllQuotes()
-	json.NewEncoder(w).Encode(response)
+	logger := slog.New(slog.NewTextHandler(multi, nil))
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		tag := r.URL.Query().Get("tag")
+
+		var response []Quote
+		var err error
+
+		if tag != "" {
+			// Если тег передан в URL (?tag=work)
+			response, err = getQuotesByTag(db, tag)
+		} else {
+			// Если тега нет, вызываем твою старую функцию
+			response = getAllQuotes(db)
+		}
+
+		if err != nil {
+			logger.Error("Error fetching quotes", "err", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(response)
+	}
 }
 
-func quotesByTagHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func quotesByTagHandler(db *sql.DB) http.HandlerFunc {
+	file, _ := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	multi := io.MultiWriter(os.Stdout, file)
 
-	tag := r.URL.Query().Get("tag")
+	logger := slog.New(slog.NewTextHandler(multi, nil))
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
-	//get by tag
-	fmt.Println(tag)
-	response := getQuotesByTag(tag)
+		tag := r.URL.Query().Get("tag")
+		if tag == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Tag parameter is required"})
+			return
+		}
 
-	json.NewEncoder(w).Encode(response)
+		response, err := getQuotesByTag(db, tag)
+		if err != nil {
+			logger.Error("Failed to fetch quotes", "tag", tag, "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if response == nil {
+			response = []Quote{}
+		}
+
+		json.NewEncoder(w).Encode(response)
+	}
 }
 
 func quotesByIdHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,14 +148,6 @@ func deleteQuoteByIdHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, "Quote not found", http.StatusNotFound)
 	}
-}
-
-func quotesListDispatcher(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Query().Get("tag") != "" {
-		quotesByTagHandler(w, r)
-		return
-	}
-	quotesHandler(w, r)
 }
 
 func createQuoteHandler(w http.ResponseWriter, r *http.Request) {
